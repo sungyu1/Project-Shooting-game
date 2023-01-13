@@ -1,2 +1,1 @@
-# portfoilo2
- sun portfoilo
+JavaScript 슈팅게임 만들기.
