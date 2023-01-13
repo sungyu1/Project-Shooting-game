@@ -22,6 +22,8 @@ let spaceshipY =canvas.height-48;
 
 let bulletList=[] //총알 저장 리스트
 let enemyList=[]  //적군 저장 리스트
+// 스코어 
+let score=0;
 
 // 총알 좌표 
 function Bullet(){
@@ -29,15 +31,30 @@ function Bullet(){
   this.y=0;
   this.init=function(){
     this.x =spaceshipX+7; // 7은 우주선 중앙에서 미사일 발사
-    this.y=spaceshipY
-    
+    this.y=spaceshipY;
+    this.alive=true;    //true 면 살아있는총알 false면 죽은총알 (총알의 상태)
     bulletList.push(this);
   };
   //총알 발사
   this.update=function(){
     this.y-=7;
   };
+  this.checkHit=function(){
+    for(let i=0; i<enemyList.length;i++){
+      if(this.y <= enemyList[i].y && 
+        this.x >= enemyList[i].x && 
+        this.x <= enemyList[i].x+64){
+          // 총알이 적군에 맞게 되면 적군은 없어지고 ,점수획득
+          score++;
+          this.alive=false ;//적군과 총알이 맞아 사라짐 
+          enemyList.splice(i,1);
+  
+      }
+    }
+  };
 }
+
+
 
 // 적군을 만들기 위한 랜덤 함수
 function generateRandomValue(min,max){
@@ -136,37 +153,47 @@ function update(){
 
     // 총알 발사시 y좌표 업데이트 하는 함수호출
     for(let i=0;i<bulletList.length;i++){
-      bulletList[i].update();
+      if(bulletList[i].alive){
+        bulletList[i].update();
+        bulletList[i].checkHit(); 
+      }
     }
     // 적군 내려오는 함수호출
     for(let i=0;i<enemyList.length;i++){
       enemyList[i].update();
     }
   }
-
-
-
-function render(){
-  // 백그라운드 
-  ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height); 
-  // 우주선 
-  ctx.drawImage(spaceshipImg,spaceshipX,spaceshipY,)
-  // 총알
+  
+  
+  
+  function render(){
+    // 백그라운드 
+    ctx.drawImage(backgroundImage,0,0,canvas.width,canvas.height); 
+    // 우주선 
+    ctx.drawImage(spaceshipImg,spaceshipX,spaceshipY,)
+    // 스코어
+    ctx.fillText(`Score:${score}`,20,20);
+    ctx.fillStyle="white";
+    ctx.font="20px Arial";
+    // 총알
   for(let i=0;i<bulletList.length;i++){
-    ctx.drawImage(bulletImage,bulletList[i].x,bulletList[i].y);
+    if(bulletList[i].alive){
+      ctx.drawImage(bulletImage, bulletList[i].x , bulletList[i].y);
+    }
   }
   // 적군
   for(let i=0;i<enemyList.length;i++){
     ctx.drawImage(enemyImage,enemyList[i].x,enemyList[i].y);
   }
-
 }
+
 function main(){
   if(!gameOver){
-
     update();  //좌표값 업데이트함수 
     render();  //그려주는 함수
     requestAnimationFrame(main);
+  }else{
+    ctx.drawImage(gameOverImage,10,100,380,380);
   }
 }
 
@@ -189,3 +216,7 @@ main();
 // 적군은 위에서 아래로 내려온다.
 // 바닥에 닿으면 Game over.
 // 적군과 총알이 만나면 적군이 사라진다. 그리고 점수 1점 획득.
+
+// 적군을 없앤다. 
+// 총알.y <= 적군.y 또는 총알.x >= 적군.x + 적군의 넓이에 닿으면 
+// 적군이 사라지고 점수획득
